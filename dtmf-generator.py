@@ -144,23 +144,37 @@ def main():
         parser.add_argument(
             "-p",
             "--phonenumber",
+            required=True,
             type=str,
             help="Phone number to encoder (Only numbers)",
         )
         parser.add_argument(
-            "-f", "--samplefrequency", type=np.int, help="Sample Frequency (Hz)"
+            "-f",
+            "--samplefrequency",
+            required=True,
+            type=np.int,
+            help="Sample Frequency (Hz)",
         )
         parser.add_argument(
-            "-t", "--toneduration", type=np.float, help="Tones duration (s)"
+            "-t",
+            "--toneduration",
+            required=True,
+            type=np.float,
+            help="Tones duration (s)",
         )
         parser.add_argument(
             "-s",
             "--silence",
+            required=True,
             type=np.float,
             help="Silence duration between tones duration (s)",
         )
         parser.add_argument(
-            "-o", "--output", type=str, help="Filename output for WAV file"
+            "-o",
+            "--output",
+            required=True,
+            type=str,
+            help="Filename output for WAV file",
         )
         parser.add_argument(
             "-d",
@@ -169,25 +183,24 @@ def main():
             help="Enable FFT graph of each tone (character) to debug",
         )
         args = parser.parse_args()
-    except SystemExit:
-        exc = sys.exc_info()[1]
-        print(exc)
 
-    dtmf = DtmfGenerator(
-        args.phonenumber,
-        args.samplefrequency,
-        args.toneduration,
-        args.silence,
-    )
-    wav.write(args.output, args.samplefrequency, dtmf.signal)
-    if args.debug:
-        dtmf.test_signal(
-            args.output,
+        dtmf = DtmfGenerator(
             args.phonenumber,
             args.samplefrequency,
             args.toneduration,
             args.silence,
         )
+        wav.write(args.output, args.samplefrequency, dtmf.signal)
+        if args.debug:
+            dtmf.test_signal(
+                args.output,
+                args.phonenumber,
+                args.samplefrequency,
+                args.toneduration,
+                args.silence,
+            )
+    except SystemExit:
+        pass
 
 
 if __name__ == "__main__":
