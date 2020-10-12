@@ -1,3 +1,5 @@
+import sys
+import argparse
 import numpy as np
 import scipy.io.wavfile as wav
 import matplotlib.pyplot as plt
@@ -24,25 +26,25 @@ class DtmfGenerator:
     }
 
     def __init__(
-        self, phone_number: str, Fs: np.float, time: np.float, delay: np.float, debug=False: bool
+        self,
+        phone_number: str,
+        Fs: np.float,
+        time: np.float,
+        delay: np.float,
     ):
-        self.phone_number = phone_number
-        self.Fs = Fs
-        self.time = time
-        self.delay = delay
-
-        self.signal = self.compose(self.phone_number, self.Fs, self.time, self.delay)
+        self.signal = self.compose(phone_number, Fs, time, delay)
 
     def __dtmf_function(
         self, number: str, Fs: np.float, time: np.float, delay: np.float
     ) -> np.array:
         """
-        Function which generate DTMF tone (samples) to one specific character and its delay
+        Function which generate DTMF tone (samples) to one specific character
+        and its delay
 
-        :number: Represents the character to be converted to DTMF tone
-        :Fs: Sample frequency used to generate the signal in Hz
-        :time: Duration of each tone in seconds
-        :delay: Duration of delay between each tone in seconds
+        :number: Represents the character to be converted to DTMF tone :Fs:
+        Sample frequency used to generate the signal in Hz :time: Duration of
+        each tone in seconds :delay: Duration of delay between each tone in
+        seconds
 
         :return: Array with samples to the DTMF tone and delay
         """
@@ -60,15 +62,19 @@ class DtmfGenerator:
         ) / 2  # divide by 2 to normalize between -1 and 1
 
     def compose(
-        self, phone_number: str, Fs: np.float, time: np.float, delay: np.float
+        self,
+        phone_number: str,
+        Fs: np.float,
+        time: np.float,
+        delay: np.float,
     ) -> np.array:
         """
-        Function which generate DTMF tones (samples) to the phone number
+        Function which generate DTMF tones (samples) to compose a signal
+        representing the phone number
 
-        :number: Represents the number to be converted to DTMF tone
-        :Fs: Sample frequency used to generate the signal in Hz
-        :time: Duration of each tone in seconds
-        :delay: Duration of delay between each tone in seconds
+        :number: Represents the number to be converted to DTMF tone :Fs: Sample
+        frequency used to generate the signal in Hz :time: Duration of each tone
+        in seconds :delay: Duration of delay between each tone in seconds
 
         :return: Array with samples to the DTMF tone and delay
         """
@@ -78,32 +84,98 @@ class DtmfGenerator:
             tone_delay_signal = self.__dtmf_function(number, Fs, time, delay)
             signal = np.append(signal, tone_delay_signal)
 
-            if
-
         return signal
 
-    def test_signal(self, filename: str, Fs: np.float, time: np.float, delay: np.float):
+    def test_signal(
+        self,
+        filename: str,
+        phone_number: str,
+        Fs: np.float,
+        time: np.float,
+        delay: np.float,
+    ):
         rate, signal = wav.read(filename)
-        for i in np.arange(0, 6):
-            self.test_tone(signal[(i * Fs) : (i + 1) * Fs], Fs, time, delay)
+        plt.figure()
+        plt.title("DTMF tones frequencies and time order")
+        for i in np.arange(0, 2 * len(phone_number), 2):
+            self.test_tone(
+                signal[i * int(Fs * time) : (i + 1) * int(Fs * time)],
+                Fs,
+                time,
+                delay,
+                (i / 2) + 1,
+            )
+            plt.xlim([0, 2000])
+        plt.legend()
+        plt.show()
 
     def test_tone(
-        self, signal: np.array, Fs: np.float, time: np.float, delay: np.float
+        self,
+        signal: np.array,
+        Fs: np.float,
+        time: np.float,
+        delay: np.float,
+        index: np.int,
     ):
+
         tone_fft = np.fft.fft(signal, Fs)
         time_tone = np.arange(0, time + (1 / Fs), (1 / Fs))
         freq = np.fft.fftfreq(len(tone_fft), time_tone[1] - time_tone[0])
 
-        # plt.figure()
-        # plt.plot(freq, np.abs(tone_fft))
-        # plt.xlim([600, 2000])
+        plt.plot(freq, np.abs(tone_fft), label="{}".format(index))
         # plt.show()
 
 
 def main():
-    dtmf = DtmfGenerator("91987651279", 8000, 0.08, 0.08)
-    wav.write("file.wav", dtmf.Fs, dtmf.signal)
-    dtmf.test_signal("file.wav", dtmf.Fs, dtmf.time, dtmf.delay)
+    try:
+        parser = argparse.ArgumentParser(description="DTMF generator to phone numbers.")
+        parser.add_argument(
+            "-p",
+            "--phonenumber",
+            type=str,
+            help="Phone number to encoder (Only numbers)",
+        )
+        parser.add_argument(
+            "-f", "--samplefrequency", type=np.int, help="Sample Frequency (Hz)"
+        )
+        parser.add_argument(
+            "-t", "--toneduration", type=np.float, help="Tones duration (s)"
+        )
+        parser.add_argument(
+            "-s",
+            "--silence",
+            type=np.float,
+            help="Silence duration between tones duration (s)",
+        )
+        parser.add_argument(
+            "-o", "--output", type=str, help="Filename output for WAV file"
+        )
+        parser.add_argument(
+            "-d",
+            "--debug",
+            action="store_true",
+            help="Enable FFT graph of each tone (character) to debug",
+        )
+        args = parser.parse_args()
+    except SystemExit:
+        exc = sys.exc_info()[1]
+        print(exc)
+
+    dtmf = DtmfGenerator(
+        args.phonenumber,
+        args.samplefrequency,
+        args.toneduration,
+        args.silence,
+    )
+    wav.write(args.output, args.samplefrequency, dtmf.signal)
+    if args.debug:
+        dtmf.test_signal(
+            args.output,
+            args.phonenumber,
+            args.samplefrequency,
+            args.toneduration,
+            args.silence,
+        )
 
 
 if __name__ == "__main__":
