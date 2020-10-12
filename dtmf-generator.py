@@ -41,10 +41,10 @@ class DtmfGenerator:
         Function which generate DTMF tone (samples) to one specific character
         and its delay
 
-        :number: Represents the character to be converted to DTMF tone :Fs:
-        Sample frequency used to generate the signal in Hz :time: Duration of
-        each tone in seconds :delay: Duration of delay between each tone in
-        seconds
+        :number: Represents the character to be converted to DTMF tone
+        :Fs: Sample frequency used to generate the signal in Hz
+        :time: Duration of each tone in seconds
+        :delay: Duration of delay between each tone in seconds
 
         :return: Array with samples to the DTMF tone and delay
         """
@@ -72,12 +72,14 @@ class DtmfGenerator:
         Function which generate DTMF tones (samples) to compose a signal
         representing the phone number
 
-        :number: Represents the number to be converted to DTMF tone :Fs: Sample
-        frequency used to generate the signal in Hz :time: Duration of each tone
-        in seconds :delay: Duration of delay between each tone in seconds
+        :number: Represents the number to be converted to DTMF tone
+        :Fs: Sample frequency used to generate the signal in Hz
+        :time: Duration of each tone in seconds
+        :delay: Duration of delay between each tone in seconds
 
         :return: Array with samples to the DTMF tone and delay
         """
+
         signal = np.array([])
 
         for number in phone_number:
@@ -94,13 +96,25 @@ class DtmfGenerator:
         time: np.float,
         delay: np.float,
     ):
+        """
+        Function which debug DTMF tones generated in the WAV file plotting their frequencies
+
+        :filename: WAV filename to debug
+        :phone_number: Phone number to verify
+        :Fs: Sample frequency used to generate the signal in Hz
+        :time: Duration of each tone in seconds
+        :delay: Duration of delay between each tone in seconds
+
+        :return: A graph with tones and their frequencies
+        """
+
         rate, signal = wav.read(filename)
         n_columns_axis = np.ceil(np.sqrt(len(phone_number))).astype(int)
         n_rows_axis = np.ceil(len(phone_number) / n_columns_axis).astype(int)
         fig, axis = plt.subplots(n_rows_axis, n_columns_axis)
         fig.suptitle("DTMF tones frequencies")
         for i in np.arange(0, 2 * len(phone_number), 2):
-            self.test_tone(
+            self.__test_tone(
                 signal[i * int(Fs * time) : (i + 1) * int(Fs * time)],
                 Fs,
                 time,
@@ -113,7 +127,7 @@ class DtmfGenerator:
         plt.tight_layout()
         plt.show()
 
-    def test_tone(
+    def __test_tone(
         self,
         signal: np.array,
         Fs: np.float,
@@ -124,6 +138,20 @@ class DtmfGenerator:
         n_columns_axis: np.int,
         index: np.int,
     ):
+        """
+        Function which debug one DTMF tone generated in the WAV file plotting its frequency
+
+        :signal: Array with the tone to be plotted
+        :Fs: Sample frequency used to generate the signal in Hz
+        :time: Duration of each tone in seconds
+        :delay: Duration of delay between each tone in seconds
+        :axix: Axis of matplotlib to plot the tone
+        :n_rows_axis: Number of rows into subplot of matplotlib
+        :n_columns_axis: Number of columns into subplot of matplotlib
+        :index: Index of the tone
+
+        :return: A graph with one tone and its frequencies
+        """
 
         tone_fft = np.fft.fft(signal, Fs)
         time_tone = np.arange(0, time + (1 / Fs), (1 / Fs))
