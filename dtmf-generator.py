@@ -95,18 +95,22 @@ class DtmfGenerator:
         delay: np.float,
     ):
         rate, signal = wav.read(filename)
-        plt.figure()
-        plt.title("DTMF tones frequencies and time order")
+        n_columns_axis = np.ceil(np.sqrt(len(phone_number))).astype(int)
+        n_rows_axis = np.ceil(len(phone_number) / n_columns_axis).astype(int)
+        fig, axis = plt.subplots(n_rows_axis, n_columns_axis)
+        fig.suptitle("DTMF tones frequencies")
         for i in np.arange(0, 2 * len(phone_number), 2):
             self.test_tone(
                 signal[i * int(Fs * time) : (i + 1) * int(Fs * time)],
                 Fs,
                 time,
                 delay,
+                axis,
+                n_rows_axis,
+                n_columns_axis,
                 (i / 2) + 1,
             )
-            plt.xlim([0, 2000])
-        plt.legend()
+        plt.tight_layout()
         plt.show()
 
     def test_tone(
@@ -115,6 +119,9 @@ class DtmfGenerator:
         Fs: np.float,
         time: np.float,
         delay: np.float,
+        axis,
+        n_rows_axis: np.int,
+        n_columns_axis: np.int,
         index: np.int,
     ):
 
@@ -122,8 +129,13 @@ class DtmfGenerator:
         time_tone = np.arange(0, time + (1 / Fs), (1 / Fs))
         freq = np.fft.fftfreq(len(tone_fft), time_tone[1] - time_tone[0])
 
-        plt.plot(freq, np.abs(tone_fft), label="{}".format(index))
-        # plt.show()
+        row = int(np.ceil(index / n_columns_axis))
+        column = int(index - ((row - 1) * n_columns_axis))
+        axis[row - 1, column - 1].plot(freq, np.abs(tone_fft))
+        axis[row - 1, column - 1].set_title("Tone {}".format(int(index)))
+        axis[row - 1, column - 1].set_xlabel("Frequency (Hz)")
+        axis[row - 1, column - 1].set_ylabel("Amplitude")
+        axis[row - 1, column - 1].set_xlim([600, 2000])
 
 
 def main():
