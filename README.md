@@ -1,4 +1,4 @@
-# dtmf-generator
+# DTMF Generator
 Python application to generate DTMF tones to phone numbers.
 
 ## Install
