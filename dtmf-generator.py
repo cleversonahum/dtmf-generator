@@ -31,11 +31,12 @@ class DtmfGenerator:
         Fs: np.float,
         time: np.float,
         delay: np.float,
+        amp: np.float,
     ):
-        self.signal = self.compose(phone_number, Fs, time, delay)
+        self.signal = self.compose(phone_number, Fs, time, delay, amp)
 
     def __dtmf_function(
-        self, number: str, Fs: np.float, time: np.float, delay: np.float
+        self, number: str, Fs: np.float, time: np.float, delay: np.float, amp: np.float
     ) -> np.array:
         """
         Function which generate DTMF tone (samples) to one specific character
@@ -52,14 +53,13 @@ class DtmfGenerator:
         time_tone = np.arange(0, time, (1 / Fs))
         time_delay = np.arange(0, delay, (1 / Fs))
 
-        tone_samples = np.sin(
-            2 * np.pi * self.DTMF_TABLE[number][0] * time_tone
-        ) + np.sin(2 * np.pi * self.DTMF_TABLE[number][1] * time_tone)
+        tone_samples = amp * (
+            np.sin(2 * np.pi * self.DTMF_TABLE[number][0] * time_tone)
+            + np.sin(2 * np.pi * self.DTMF_TABLE[number][1] * time_tone)
+        )
         delay_samples = np.sin(2 * np.pi * 0 * time_delay)
 
-        return (
-            np.append(tone_samples, delay_samples)
-        ) / 2  # divide by 2 to normalize between -1 and 1
+        return np.append(tone_samples, delay_samples)
 
     def compose(
         self,
@@ -67,6 +67,7 @@ class DtmfGenerator:
         Fs: np.float,
         time: np.float,
         delay: np.float,
+        amp: np.float,
     ) -> np.array:
         """
         Function which generate DTMF tones (samples) to compose a signal
@@ -83,7 +84,7 @@ class DtmfGenerator:
         signal = np.array([])
 
         for number in phone_number:
-            tone_delay_signal = self.__dtmf_function(number, Fs, time, delay)
+            tone_delay_signal = self.__dtmf_function(number, Fs, time, delay, amp)
             signal = np.append(signal, tone_delay_signal)
 
         return signal
@@ -198,6 +199,13 @@ def main():
             help="Silence duration between tones duration (s)",
         )
         parser.add_argument(
+            "-a",
+            "--amplitude",
+            required=True,
+            type=np.float,
+            help="Amplitude of the sine waves",
+        )
+        parser.add_argument(
             "-o",
             "--output",
             required=True,
@@ -217,6 +225,7 @@ def main():
             args.samplefrequency,
             args.toneduration,
             args.silence,
+            args.amplitude,
         )
         wav.write(args.output, args.samplefrequency, dtmf.signal)
         if args.debug:
