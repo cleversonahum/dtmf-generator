@@ -28,15 +28,15 @@ class DtmfGenerator:
     def __init__(
         self,
         phone_number: str,
-        Fs: np.float,
-        time: np.float,
-        delay: np.float,
-        amp: np.float,
+        Fs: float,
+        time: float,
+        delay: float,
+        amp: float,
     ):
         self.signal = self.compose(phone_number, Fs, time, delay, amp)
 
     def __dtmf_function(
-        self, number: str, Fs: np.float, time: np.float, delay: np.float, amp: np.float
+        self, number: str, Fs: float, time: float, delay: float, amp: float
     ) -> np.array:
         """
         Function which generate DTMF tone (samples) to one specific character
@@ -64,10 +64,10 @@ class DtmfGenerator:
     def compose(
         self,
         phone_number: str,
-        Fs: np.float,
-        time: np.float,
-        delay: np.float,
-        amp: np.float,
+        Fs: float,
+        time: float,
+        delay: float,
+        amp: float,
     ) -> np.array:
         """
         Function which generate DTMF tones (samples) to compose a signal
@@ -93,9 +93,9 @@ class DtmfGenerator:
         self,
         filename: str,
         phone_number: str,
-        Fs: np.float,
-        time: np.float,
-        delay: np.float,
+        Fs: float,
+        time: float,
+        delay: float,
     ):
         """
         Function which debug DTMF tones generated in the WAV file plotting their frequencies
@@ -131,13 +131,13 @@ class DtmfGenerator:
     def __test_tone(
         self,
         signal: np.array,
-        Fs: np.float,
-        time: np.float,
-        delay: np.float,
+        Fs: float,
+        time: float,
+        delay: float,
         axis,
-        n_rows_axis: np.int,
-        n_columns_axis: np.int,
-        index: np.int,
+        n_rows_axis: int,
+        n_columns_axis: int,
+        index: int,
     ):
         """
         Function which debug one DTMF tone generated in the WAV file plotting its frequency
@@ -181,28 +181,28 @@ def main():
             "-f",
             "--samplefrequency",
             required=True,
-            type=np.int,
+            type=int,
             help="Sample Frequency (Hz)",
         )
         parser.add_argument(
             "-t",
             "--toneduration",
             required=True,
-            type=np.float,
+            type=float,
             help="Tones duration (s)",
         )
         parser.add_argument(
             "-s",
             "--silence",
             required=True,
-            type=np.float,
+            type=float,
             help="Silence duration between tones duration (s)",
         )
         parser.add_argument(
             "-a",
             "--amplitude",
             required=True,
-            type=np.float,
+            type=float,
             help="Amplitude of the sine waves",
         )
         parser.add_argument(
